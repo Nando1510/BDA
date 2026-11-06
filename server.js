@@ -4,6 +4,7 @@ const Medida = require('./models/Medida');
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // CONECTA O SERVIDOR NODE.JS AO BANCO DE DADOS MONGODB
