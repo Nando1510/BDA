@@ -8,29 +8,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // CONECTA O SERVIDOR NODE.JS AO BANCO DE DADOS MONGODB
-// SE ELE NÃO EXISTIR AINDA, O MONGODB CRIA AUTOMATICAMENTE QUANDO O USUÁRIO SALVAR O PRIMEIRO DADO.
 const mongoURI = process.env.MONGO_URI || 'mongodb+srv://nandohanauer01_db_user:CvSJWZa9fvzqYZQJ@cluster0.fbgabq9.mongodb.net/imcDB?retryWrites=true&w=majority';
 
-
-// INICIA O SERVIDOR APÓS GARANTIR A CONEXÃO COM O MONGODB
-const PORT = process.env.PORT || 3000;
-
-mongoose.connect(mongoURI)
-  .then(() => {
-    console.log('MongoDB Atlas conectado com sucesso!');
-    app.listen(PORT, () => {
-      console.log(`Servidor rodando na porta ${PORT}`);
-    });
-  })
-  .catch(err => {
-    console.error('Erro ao conectar ao MongoDB:', err);
-  });
-
-
-
-
-
-// FUNÇÃO QUE GERA UM ID  CRESCENTE PARA CADA NOVO REGISTRO
+// FUNÇÃO QUE GERA UM ID CRESCENTE PARA CADA NOVO REGISTRO
 async function gerarCustomId() {
   const ultima = await Medida.findOne().sort({ customId: -1 });
   return ultima ? ultima.customId + 1 : 1;
@@ -59,7 +39,7 @@ app.post('/salvar', async (req, res) => {
       resultado = 'Obesidade';
     }
 
-    const customId = await gerarCustomId(); // -> AQUI ELE GERA UM IP FIXO PARA CADA REGISTRO
+    const customId = await gerarCustomId();
 
     const medida = new Medida({ customId, nome, altura, peso, resultado });
     await medida.save();
@@ -82,16 +62,11 @@ app.get('/registros', async (req, res) => {
   }
 });
 
-
-
-
 // ROTA PARA EXCLUIR REGISTRO
 app.delete('/excluir/:customId', async (req, res) => {
   await Medida.findOneAndDelete({ customId: req.params.customId });
   res.json({ message: 'Registro excluído!' });
 });
-
-
 
 // ROTA PARA ATUALIZAR REGISTRO
 app.put('/atualizar/:id', async (req, res) => {
@@ -110,10 +85,16 @@ app.put('/atualizar/:id', async (req, res) => {
   }
 });
 
-
-
-// INICIA O SERVIDOR EXPRESS DENTRO DO NODE.JS
+// INICIA O SERVIDOR APÓS GARANTIR A CONEXÃO COM O MONGODB
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+
+mongoose.connect(mongoURI)
+  .then(() => {
+    console.log('MongoDB Atlas conectado com sucesso!');
+    app.listen(PORT, () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Erro ao conectar ao MongoDB:', err);
+  });
