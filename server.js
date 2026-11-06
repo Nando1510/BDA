@@ -12,12 +12,20 @@ app.use(express.static('public'));
 const mongoURI = process.env.MONGO_URI || 'mongodb+srv://nandohanauer01_db_user:CvSJWZa9fvzqYZQJ@cluster0.fbgabq9.mongodb.net/imcDB?retryWrites=true&w=majority';
 
 
+// INICIA O SERVIDOR APÓS GARANTIR A CONEXÃO COM O MONGODB
+const PORT = process.env.PORT || 3000;
 
 mongoose.connect(mongoURI)
+  .then(() => {
+    console.log('MongoDB Atlas conectado com sucesso!');
+    app.listen(PORT, () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Erro ao conectar ao MongoDB:', err);
+  });
 
-.then(() => console.log('MongoDB Atlas conectado com sucesso!'))
-
-.catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 
 
 
