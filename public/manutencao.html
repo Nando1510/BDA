@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manutenção de Registros</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background-color: teal;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      color: #ccc;
+      border: 2px;
+      
+    }
+
+    th, td {
+      border: 1px solid #bbbec4fd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: rgb(255,198,0);
+      color: black;
+    }
+
+    .icon {
+      cursor: pointer;
+      margin: 0 5px;
+    }
+
+    .teal-navbar {
+      background-color: teal;
+      padding: 10px;
+      color: white;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .teal-navbar button {
+    margin-right: 50px;
+    background-color: crimson;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: inherit;
+  }
+    
+  /*PARA O PONTEIRO DO MOUSE VIRAR UMA MÃO*/
+    .teal-navbar button:hover {
+    opacity: 0.9;
+  }
+
+    
+    .teal-navbar span {
+      margin-left: 5px;
+      font-weight: bold;
+    }
+
+    .spacer {
+      margin-top: 60px;
+    }
+
+     h2 {
+      color: white;
+      text-align: center;
+    }
+
+    .box-search {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .box-search input {
+      width: 400px;
+      height: 36px;
+      border: 1px solid #444;
+      border-top-left-radius: 18px;
+      border-bottom-left-radius: 18px;
+      padding: 0 12px;
+      font-size: 1rem;
+      outline: none;
+    }
+    .box-search button {
+      height: 38px;
+      border: 1px solid #444;
+      border-left: none;
+      border-top-right-radius: 18px;
+      border-bottom-right-radius: 18px;
+      background-color: teal;
+      color: white;
+      padding: 0 15px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .box-search button:hover {
+      background-color: #006666;
+    }
+
+  </style>
+</head>
+<body>
+
+  <nav class="teal-navbar">
+    <span>BANCO DE DADOS AVANÇADO</span>
+    <button id="sair">Sair</button>
+  </nav>
+
+  <div class="spacer"></div>
+
+  <h2>Registros Cadastrados</h2>
+
+  <br>
+  <div class="box-search">
+    <input type="search" id="pesquisar" placeholder="Pesquisar por nome" />
+    <button onclick="searchData()">🔍</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Altura</th>
+        <th>Peso</th>
+        <th>Resultado</th>
+        <th>Criado em</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="corpo-tabela">
+      <!-- Linhas serão inseridas via JS -->
+    </tbody>
+  </table>
+
+  <script>
+    const botaoSair = document.getElementById('sair');
+    botaoSair.addEventListener('click', confirmarSaida);
+
+    function confirmarSaida() {
+      const confirmacao =  confirm('Tem certeza que deseja sair e voltar à página inicial?');
+      if (confirmacao === true){
+        window.location.href = 'index.html'
+      }
+    }
+
+    async function carregarDados() {
+      try {
+        const resposta = await fetch('/registros');
+        const dados = await resposta.json();
+        const corpo = document.getElementById('corpo-tabela');
+        corpo.innerHTML = '';
+
+        dados.forEach(item => {
+          const tr = document.createElement('tr');
+          const criadoEm = new Date(item.createdAt).toLocaleString('pt-BR');
+          tr.innerHTML = `
+            <td>${item.customId}</td>
+            <td>${item.nome}</td>
+            <td>${item.altura}</td>
+            <td>${item.peso}</td>
+            <td>${item.resultado}</td>
+            <td>${criadoEm}</td>
+            <td>
+              <span class="icon" onclick="iniciarEdicao(this, ${item.customId})">✏️</span>
+              <span class="icon" onclick="excluirRegistro(${item.customId})">🗑️</span>
+            </td>
+          `;
+          corpo.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('Erro ao carregar dados:', err);
+      }
+    }
+
+    function iniciarEdicao(el, id) {
+      const tr = el.closest('tr');
+      const cells = tr.querySelectorAll('td');
+      ['nome', 'altura', 'peso'].forEach((field, idx) => {
+        const td = cells[idx + 1];
+        const valor = td.textContent;
+        td.innerHTML = `<input class="edit-field" id="edit-${field}-${id}" value="${valor}">`;
+      });
+      el.textContent = '💾';
+      el.onclick = () => salvarEdicao(id);
+    }
+
+    async function salvarEdicao(id) {
+      const nome = document.getElementById(`edit-nome-${id}`).value;
+      const altura = parseFloat(document.getElementById(`edit-altura-${id}`).value);
+      const peso = parseFloat(document.getElementById(`edit-peso-${id}`).value);
+
+      // Calcular o IMC
+      const imc = peso / (altura * altura);
+      let resultado = '';
+
+      if (imc < 18.5) resultado = 'Abaixo do peso';
+      else if (imc < 25) resultado = 'Normal';
+      else if (imc < 30) resultado = 'Sobrepeso';
+      else resultado = 'Obesidade';
+
+      // Enviar para o backend
+      const res = await fetch(`/atualizar/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ nome, altura, peso, resultado })  // inclui resultado
+      });
+
+      if (res.ok) carregarDados();
+      else alert('Erro ao salvar edição');
+}
+
+
+    async function excluirRegistro(id) {
+      if (!confirm('Deseja realmente excluir este registro?')) return;
+      const res = await fetch(`/excluir/${id}`, { method: 'DELETE' });
+      if (res.ok) carregarDados();
+      else alert('Erro ao excluir registro');
+    }
+
+    function searchData() {
+      const filtro = document.getElementById('pesquisar').value.toLowerCase();
+      document.querySelectorAll('#corpo-tabela tr').forEach(tr => {
+        const nome = tr.cells[1].textContent.toLowerCase();
+        tr.style.display = nome.includes(filtro) ? '' : 'none';
+      });
+    }
+
+    document.getElementById('pesquisar')
+      .addEventListener('keydown', e => { if (e.key === 'Enter') searchData(); });
+
+    carregarDados();
+  </script>
+
+</body>
+</html>
