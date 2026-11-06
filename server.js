@@ -59,7 +59,7 @@ app.post('/salvar', async (req, res) => {
     console.log('Dados salvos:', medida);
     res.status(201).json({ message: 'Dados salvos com sucesso!' });
   } catch (error) {
-    //console.error('Erro ao salvar dados:', error);
+    console.error('Erro ao salvar dados:', error);
     res.status(500).json({ message: 'Erro ao salvar dados' });
   }
 });
