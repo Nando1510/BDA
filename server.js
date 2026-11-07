@@ -8,7 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // CONECTA O SERVIDOR NODE.JS AO BANCO DE DADOS MONGODB
-const mongoURI = process.env.MONGO_URI || 'mongodb+srv://nandohanauer01_db_user:CvSJWZa9fvzqYZQJ@cluster0.fbgabq9.mongodb.net/imcDB?retryWrites=true&w=majority';
+const mongoURI = process.env.MONGO_URI || 'mongodb+srv://nandohanauer01_db_user:HH13TKCw03DJoLCz@cluster0.fbgabq9.mongodb.net/imcDB?retryWrites=true&w=majority';
 
 // FUNÇÃO QUE GERA UM ID CRESCENTE PARA CADA NOVO REGISTRO
 async function gerarCustomId() {
@@ -85,13 +85,17 @@ app.put('/atualizar/:id', async (req, res) => {
   }
 });
 
+//NO FIM DO ARQUIVO
+
+
+
 // INICIA O SERVIDOR APÓS GARANTIR A CONEXÃO COM O MONGODB
 const PORT = process.env.PORT || 3000;
 
 mongoose.connect(mongoURI)
   .then(() => {
     console.log('MongoDB Atlas conectado com sucesso!');
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`Servidor rodando na porta ${PORT}`);
     });
   })
